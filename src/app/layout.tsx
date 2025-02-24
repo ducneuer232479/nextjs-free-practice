@@ -5,6 +5,7 @@ import localFont from 'next/font/local'
 
 import { ThemeProvider } from '@/components/theme-provider'
 import Header from '@/components/header'
+import { Toaster } from '@/components/ui/toaster'
 
 // const roboto = Roboto({ subsets: ['vietnamese'], weight: ['100', '300'] })
 
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body className={`${inter.className}`}>
+        <Toaster />
         <ThemeProvider
           attribute='class'
           defaultTheme='system'

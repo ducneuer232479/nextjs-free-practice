@@ -13,33 +13,69 @@ import {
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { RegisterBody, RegisterBodyType } from '@/schemaValidations/auth.schema'
+import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import envConfig from '@/config'
+import { useToast } from '@/components/ui/use-toast'
 
-const RegisterForm = () => {
-  const form = useForm<RegisterBodyType>({
-    resolver: zodResolver(RegisterBody),
+const LoginForm = () => {
+  const { toast } = useToast()
+  const form = useForm<LoginBodyType>({
+    resolver: zodResolver(LoginBody),
     defaultValues: {
-      name: '',
       email: '',
-      password: '',
-      confirmPassword: ''
+      password: ''
     }
   })
 
   // 2. Define a submit handler.
-  const onSubmit = async (values: RegisterBodyType) => {
-    const result = await fetch(
-      `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`,
-      {
-        body: JSON.stringify(values),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        method: 'POST'
+  const onSubmit = async (values: LoginBodyType) => {
+    try {
+      const result = await fetch(
+        `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
+        {
+          body: JSON.stringify(values),
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          method: 'POST'
+        }
+      ).then(async (res) => {
+        const payload = await res.json()
+
+        const data = { status: res.status, payload }
+
+        if (!res.ok) {
+          throw data
+        }
+
+        return data
+      })
+      toast({
+        description: result?.payload.message
+      })
+    } catch (error: any) {
+      console.log(error)
+      const errors = error.payload.errors as {
+        field: string
+        message: string
+      }[]
+      const status = error.status as number
+
+      if (status === 422) {
+        errors.forEach((error) => {
+          form.setError(error.field as 'email' | 'password', {
+            type: 'server',
+            message: error.message
+          })
+        })
+      } else {
+        toast({
+          title: 'Lỗi',
+          description: error.payload.message,
+          variant: 'destructive'
+        })
       }
-    ).then((res) => res.json())
-    console.log(result)
+    }
   }
 
   return (
@@ -49,19 +85,6 @@ const RegisterForm = () => {
         className='space-y-2 max-w-[600px] w-full flex-shrink-0'
         noValidate
       >
-        <FormField
-          control={form.control}
-          name='name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tên</FormLabel>
-              <FormControl>
-                <Input placeholder='shadcn' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name='email'
@@ -88,25 +111,12 @@ const RegisterForm = () => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name='confirmPassword'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nhập lại mật khẩu</FormLabel>
-              <FormControl>
-                <Input placeholder='shadcn' type='password' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <Button type='submit' className='!mt-8 w-full'>
-          Đăng ký
+          Đăng nhập
         </Button>
       </form>
     </Form>
   )
 }
 
-export default RegisterForm
+export default LoginForm
