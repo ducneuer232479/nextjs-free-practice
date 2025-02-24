@@ -6,6 +6,8 @@ import localFont from 'next/font/local'
 import { ThemeProvider } from '@/components/theme-provider'
 import Header from '@/components/header'
 import { Toaster } from '@/components/ui/toaster'
+import { cookies } from 'next/headers'
+import { AuthProvider } from '@/app/AuthProvider'
 
 // const roboto = Roboto({ subsets: ['vietnamese'], weight: ['100', '300'] })
 
@@ -36,6 +38,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = cookies()
+  const sessionToken = cookieStore.get('sessionToken')
+
   return (
     <html lang='en' suppressHydrationWarning>
       <body className={`${inter.className}`}>
@@ -47,7 +52,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          {children}
+          <AuthProvider initialSessionToken={sessionToken?.value}>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -39,7 +39,8 @@ const RegisterForm = () => {
         method: 'POST'
       }
     ).then((res) => res.json())
-    console.log(result)
+
+    console.log('register', result)
   }
 
   return (
