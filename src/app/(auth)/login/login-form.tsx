@@ -14,13 +14,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
-import envConfig from '@/config'
 import { useToast } from '@/components/ui/use-toast'
-import { useAuthContext } from '@/app/AuthProvider'
+import { authApiRequest } from '@/apiRequests/auth'
+import { useRouter } from 'next/navigation'
 
 const LoginForm = () => {
   const { toast } = useToast()
-  const { setSessionToken } = useAuthContext()
+  const router = useRouter()
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -33,52 +33,12 @@ const LoginForm = () => {
   // 2. Define a submit handler.
   const onSubmit = async (values: LoginBodyType) => {
     try {
-      const result = await fetch(
-        `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
-        {
-          body: JSON.stringify(values),
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          method: 'POST'
-        }
-      ).then(async (res) => {
-        const payload = await res.json()
-
-        const data = { status: res.status, payload }
-
-        if (!res.ok) {
-          throw data
-        }
-
-        return data
-      })
+      const result = await authApiRequest.login(values)
       toast({
         description: result?.payload.message
       })
-
-      const resultFromNextServer = await fetch('/api/auth', {
-        body: JSON.stringify(result),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        method: 'POST'
-      }).then(async (res) => {
-        const payload = await res.json()
-
-        const data = {
-          status: res.status,
-          payload
-        }
-
-        if (!res.ok) {
-          throw data
-        }
-
-        return data
-      })
-
-      setSessionToken(result.payload?.data?.token)
+      await authApiRequest.auth({ sessionToken: result.payload.data.token })
+      router.push('/me')
     } catch (error: any) {
       console.log(error)
       const errors = error.payload.errors as {
