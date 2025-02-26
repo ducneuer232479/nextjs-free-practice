@@ -14,10 +14,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RegisterBody, RegisterBodyType } from '@/schemaValidations/auth.schema'
-import envConfig from '@/config'
 import { useRouter } from 'next/navigation'
 import { authApiRequest } from '@/apiRequests/auth'
 import { useToast } from '@/components/ui/use-toast'
+import { handleErrorApi } from '@/lib/utils'
 
 const RegisterForm = () => {
   const router = useRouter()
@@ -35,12 +35,19 @@ const RegisterForm = () => {
 
   // 2. Define a submit handler.
   const onSubmit = async (values: RegisterBodyType) => {
-    const result = await authApiRequest.register(values)
-    toast({
-      description: result?.payload.message
-    })
-    await authApiRequest.auth({ sessionToken: result.payload.data.token })
-    router.push('/me')
+    try {
+      const result = await authApiRequest.register(values)
+      toast({
+        description: result?.payload.message
+      })
+      await authApiRequest.auth({ sessionToken: result.payload.data.token })
+      router.push('/me')
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
   }
 
   return (
