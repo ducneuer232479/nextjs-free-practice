@@ -1,13 +1,20 @@
 'use client'
 
 import { accountApiRequest } from '@/apiRequests/account'
+import { handleErrorApi } from '@/lib/utils'
 import React, { useEffect } from 'react'
 
 const Profile = () => {
   useEffect(() => {
     const fetchRequest = async () => {
-      const results = await accountApiRequest.meClient()
-      console.log('profile', results)
+      try {
+        const result = await accountApiRequest.meClient()
+        console.log('profile', result)
+      } catch (error) {
+        handleErrorApi({
+          error
+        })
+      }
     }
     fetchRequest()
   }, [])
