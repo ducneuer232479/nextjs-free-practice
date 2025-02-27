@@ -1,12 +1,14 @@
 import envConfig from '@/config'
 import { normalizePath } from '@/lib/utils'
 import { LoginResType } from '@/schemaValidations/auth.schema'
+import { redirect } from 'next/navigation'
 
 type CustomOptions = Omit<RequestInit, 'method'> & {
   baseUrl?: string | undefined
 }
 
 export const ENTITY_ERROR_STATUS = 422
+export const AUTHENTICATION_ERROR_STATUS = 401
 
 export type EntityErrorPayload = {
   message: number
@@ -101,6 +103,23 @@ const request = async <Response>(
           payload: EntityErrorPayload
         }
       )
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+      if (typeof window !== 'undefined') {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          body: JSON.stringify({ force: true }),
+          headers: {
+            ...baseHeaders
+          }
+        })
+        clientSessionToken.value = ''
+        location.href = '/login'
+      } else {
+        const sessionToken = (options?.headers as any).Authorization.split(
+          'Bearer '
+        )[1]
+        redirect(`/logout?sessionToken=${sessionToken}`)
+      }
     } else {
       throw new HttpError(data)
     }
@@ -108,12 +127,12 @@ const request = async <Response>(
 
   if (typeof window !== undefined) {
     if (
-      ['/auth/login', '/auth/register'].some(
+      ['auth/login', 'auth/register'].some(
         (item) => item === normalizePath(url)
       )
     ) {
       clientSessionToken.value = (payload as LoginResType).data.token
-    } else if ('/auth/logout' === normalizePath(url)) {
+    } else if ('auth/logout' === normalizePath(url)) {
       clientSessionToken.value = ''
     }
   }
