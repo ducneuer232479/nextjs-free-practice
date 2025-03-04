@@ -8,8 +8,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchRequest = async () => {
       try {
-        const result = await accountApiRequest.meClient()
-        console.log('profile', result)
+        await accountApiRequest.meClient()
       } catch (error) {
         handleErrorApi({
           error

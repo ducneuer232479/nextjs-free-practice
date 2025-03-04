@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import { useToast } from '@/components/ui/use-toast'
 import { authApiRequest } from '@/apiRequests/auth'
-import { useRouter } from 'next/navigation'
+
 import { handleErrorApi } from '@/lib/utils'
 
 const LoginForm = () => {
@@ -35,10 +36,13 @@ const LoginForm = () => {
   const onSubmit = async (values: LoginBodyType) => {
     try {
       const result = await authApiRequest.login(values)
+      await authApiRequest.auth({
+        sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt
+      })
       toast({
         description: result?.payload.message
       })
-      await authApiRequest.auth({ sessionToken: result.payload.data.token })
       router.push('/me')
     } catch (error: any) {
       handleErrorApi({
