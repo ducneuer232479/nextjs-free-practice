@@ -1,5 +1,6 @@
 import { accountApiRequest } from '@/apiRequests/account'
 import Profile from '@/app/me/profile'
+import ProfileForm from '@/app/me/profile-form'
 import { cookies } from 'next/headers'
 import React from 'react'
 
@@ -9,13 +10,12 @@ const MeProfile = async () => {
 
   const results = await accountApiRequest.me(sessionToken?.value ?? '')
 
-  console.log('me', results)
-
   return (
     <div>
       <h1>Profile</h1>
       <p>{results.payload?.data?.email}</p>
       <Profile />
+      <ProfileForm profile={results.payload.data} />
     </div>
   )
 }

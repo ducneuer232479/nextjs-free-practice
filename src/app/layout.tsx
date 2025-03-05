@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import Header from '@/components/header'
 import { Toaster } from '@/components/ui/toaster'
 import { cookies } from 'next/headers'
-import { AuthProvider } from '@/app/AuthProvider'
+import { AuthProvider } from '@/app/auth-provider'
 import SlideSession from '@/components/slide-session'
 
 // const roboto = Roboto({ subsets: ['vietnamese'], weight: ['100', '300'] })

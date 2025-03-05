@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -18,29 +19,34 @@ import { useToast } from '@/components/ui/use-toast'
 import { authApiRequest } from '@/apiRequests/auth'
 
 import { handleErrorApi } from '@/lib/utils'
+import {
+  AccountResType,
+  UpdateMeBody,
+  UpdateMeBodyType
+} from '@/schemaValidations/account.schema'
+import { accountApiRequest } from '@/apiRequests/account'
 
-const LoginForm = () => {
+type Profile = AccountResType['data']
+
+const ProfileForm = ({ profile }: { profile: Profile }) => {
   const { toast } = useToast()
+  const router = useRouter()
 
-  const form = useForm<LoginBodyType>({
-    resolver: zodResolver(LoginBody),
+  const form = useForm<UpdateMeBodyType>({
+    resolver: zodResolver(UpdateMeBody),
     defaultValues: {
-      email: '',
-      password: ''
+      name: profile.name
     }
   })
 
   // 2. Define a submit handler.
-  const onSubmit = async (values: LoginBodyType) => {
+  const onSubmit = async (values: UpdateMeBodyType) => {
     try {
-      const result = await authApiRequest.login(values)
-      await authApiRequest.auth({
-        sessionToken: result.payload.data.token,
-        expiresAt: result.payload.data.expiresAt
-      })
+      const result = await accountApiRequest.updateMe(values)
       toast({
         description: result?.payload.message
       })
+      router.refresh()
     } catch (error: any) {
       handleErrorApi({
         error,
@@ -56,38 +62,36 @@ const LoginForm = () => {
         className='space-y-2 max-w-[600px] w-full flex-shrink-0'
         noValidate
       >
+        <FormLabel>Email</FormLabel>
+        <FormControl>
+          <Input
+            placeholder='Email'
+            type='email'
+            value={profile.email}
+            readOnly
+          />
+        </FormControl>
+        <FormMessage />
+
         <FormField
           control={form.control}
-          name='email'
+          name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Tên</FormLabel>
               <FormControl>
-                <Input placeholder='shadcn' type='email' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='password'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mật khẩu</FormLabel>
-              <FormControl>
-                <Input placeholder='shadcn' type='password' {...field} />
+                <Input placeholder='Tên' type='text' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type='submit' className='!mt-8 w-full'>
-          Đăng nhập
+          Cập nhật
         </Button>
       </form>
     </Form>
   )
 }
 
-export default LoginForm
+export default ProfileForm
