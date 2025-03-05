@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -16,11 +15,12 @@ import { Input } from '@/components/ui/input'
 import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import { useToast } from '@/components/ui/use-toast'
 import { authApiRequest } from '@/apiRequests/auth'
-
 import { handleErrorApi } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 const LoginForm = () => {
   const { toast } = useToast()
+  const router = useRouter()
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -41,6 +41,7 @@ const LoginForm = () => {
       toast({
         description: result?.payload.message
       })
+      router.push('/me')
     } catch (error: any) {
       handleErrorApi({
         error,

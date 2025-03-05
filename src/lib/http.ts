@@ -74,13 +74,25 @@ const request = async <Response>(
   url: string,
   options?: CustomOptions
 ) => {
-  const body = options?.body ? JSON.stringify(options.body) : undefined
-  const baseHeaders = {
-    'Content-Type': 'application/json',
-    Authorization: clientSessionToken.value
-      ? `Bear ${clientSessionToken.value}`
-      : ''
-  }
+  const body = options?.body
+    ? options.body instanceof FormData
+      ? options.body
+      : JSON.stringify(options.body)
+    : undefined
+
+  const baseHeaders =
+    body instanceof FormData
+      ? {
+          Authorization: clientSessionToken.value
+            ? `Bear ${clientSessionToken.value}`
+            : ''
+        }
+      : {
+          'Content-Type': 'application/json',
+          Authorization: clientSessionToken.value
+            ? `Bear ${clientSessionToken.value}`
+            : ''
+        }
   const baseUrl =
     options?.baseUrl === undefined
       ? envConfig.NEXT_PUBLIC_API_ENDPOINT
@@ -93,7 +105,7 @@ const request = async <Response>(
     headers: {
       ...baseHeaders,
       ...options?.headers
-    },
+    } as any,
     body,
     method
   })
@@ -120,7 +132,7 @@ const request = async <Response>(
           body: JSON.stringify({ force: true }),
           headers: {
             ...baseHeaders
-          }
+          } as any
         })
         clientSessionToken.value = ''
         clientSessionToken.expiresAt = new Date().toISOString()
