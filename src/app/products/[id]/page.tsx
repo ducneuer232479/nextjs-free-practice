@@ -1,4 +1,5 @@
 import productApiRequest from '@/apiRequests/product'
+import ProductAddForm from '@/app/products/_components/product-add-form'
 import React from 'react'
 
 const ProductEdit = async ({ params }: { params: { id: string } }) => {
@@ -11,7 +12,7 @@ const ProductEdit = async ({ params }: { params: { id: string } }) => {
   return (
     <div>
       {!product && <div>Không tìm thấy sản phẩm</div>}{' '}
-      {product && <div>{product.name}</div>}
+      {product && <ProductAddForm product={product} />}
     </div>
   )
 }
