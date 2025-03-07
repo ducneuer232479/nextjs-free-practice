@@ -10,7 +10,7 @@ type User = AccountResType['data']
 
 const Header = async ({ user }: { user: User | null }) => {
   return (
-    <div>
+    <div className='flex space-x-4'>
       <ul className='flex space-x-4'>
         <li>
           <Link href='/products'>Sản phẩm</Link>

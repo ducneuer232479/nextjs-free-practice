@@ -26,18 +26,21 @@ const ProductListPage = async () => {
         {productList.map((product) => {
           return (
             <div key={product.id} className='flex space-x-4'>
-              <Image
-                src={product.image}
-                alt=''
-                width={180}
-                height={180}
-                className='w-32 h-32 object-cover'
-              />
+              <Link href={`/products/${product.id}`}>
+                <Image
+                  src={product.image}
+                  alt=''
+                  width={180}
+                  height={180}
+                  className='w-32 h-32 object-cover'
+                />
+              </Link>
+
               <h3>{product.name}</h3>
               <p>{product.price}</p>
               {isAuthenticated && (
                 <div className='flex items-start space-x-2'>
-                  <Link href={`/products/${product.id}`}>
+                  <Link href={`/products/${product.id}/edit`}>
                     <Button variant='outline'>Edit</Button>
                   </Link>
                   <DeleteProduct product={product} />
