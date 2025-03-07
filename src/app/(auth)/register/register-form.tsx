@@ -45,6 +45,7 @@ const RegisterForm = () => {
         description: result?.payload.message
       })
       router.push('/me')
+      router.refresh()
     } catch (error: any) {
       handleErrorApi({
         error,
