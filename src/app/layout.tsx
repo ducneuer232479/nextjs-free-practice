@@ -10,6 +10,7 @@ import { cookies } from 'next/headers'
 import AppProvider from '@/app/app-provider'
 import SlideSession from '@/components/slide-session'
 import { accountApiRequest } from '@/apiRequests/account'
+import { baseOpenGraph } from '@/app/shared-metadata'
 
 // const roboto = Roboto({ subsets: ['vietnamese'], weight: ['100', '300'] })
 
@@ -35,7 +36,8 @@ export const metadata: Metadata = {
     template: '%s | Productic',
     default: 'Productic'
   },
-  description: 'Được tạo bởi Đức Dev'
+  description: 'Được tạo bởi Đức Dev',
+  openGraph: baseOpenGraph
 }
 
 export default async function RootLayout({
