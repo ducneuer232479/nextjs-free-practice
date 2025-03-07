@@ -1,8 +1,14 @@
 import { accountApiRequest } from '@/apiRequests/account'
 import Profile from '@/app/me/profile'
 import ProfileForm from '@/app/me/profile-form'
+import { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import React from 'react'
+
+export const metadata: Metadata = {
+  title: 'Hồ sơ người dùng',
+  description: 'Được tạo bởi Đức dev'
+}
 
 const MeProfile = async () => {
   const cookieStore = cookies()
