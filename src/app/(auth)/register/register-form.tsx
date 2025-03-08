@@ -18,10 +18,12 @@ import { useRouter } from 'next/navigation'
 import { authApiRequest } from '@/apiRequests/auth'
 import { useToast } from '@/components/ui/use-toast'
 import { handleErrorApi } from '@/lib/utils'
+import { useAppContext } from '@/app/app-provider'
 
 const RegisterForm = () => {
   const router = useRouter()
   const { toast } = useToast()
+  const { setUser } = useAppContext()
 
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
@@ -44,6 +46,7 @@ const RegisterForm = () => {
       toast({
         description: result?.payload.message
       })
+      setUser(result.payload.data.account)
       router.push('/me')
       router.refresh()
     } catch (error: any) {

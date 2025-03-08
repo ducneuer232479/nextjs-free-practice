@@ -9,7 +9,6 @@ import { Toaster } from '@/components/ui/toaster'
 import AppProvider from '@/app/app-provider'
 import SlideSession from '@/components/slide-session'
 import { baseOpenGraph } from '@/app/shared-metadata'
-import { AccountResType } from '@/schemaValidations/account.schema'
 
 // const roboto = Roboto({ subsets: ['vietnamese'], weight: ['100', '300'] })
 
@@ -44,8 +43,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  let user: AccountResType['data'] | null = null
-
   return (
     <html lang='en' suppressHydrationWarning>
       <body className={`${inter.className}`}>
@@ -56,7 +53,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppProvider user={user}>
+          <AppProvider>
             <Header />
             {children}
             <SlideSession />

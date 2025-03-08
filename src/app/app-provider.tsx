@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import { AccountResType } from '@/schemaValidations/account.schema'
 
 type User = AccountResType['data']
@@ -8,22 +8,29 @@ type User = AccountResType['data']
 const AppContext = createContext<{
   user: User | null
   setUser: (user: User | null) => void
+  isAuthenticated: boolean
 }>({
   user: null,
-  setUser: () => {}
+  setUser: () => {},
+  isAuthenticated: false
 })
 
-const AppProvider = ({
-  children,
-  user: userProps
-}: {
-  children: React.ReactNode
-  user: User | null
-}) => {
-  const [user, setUser] = useState<User | null>(userProps)
+const AppProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUserState] = useState<User | null>(null)
+  const isAuthenticated = Boolean(user)
+
+  const setUser = (user: User | null) => {
+    setUserState(user)
+    localStorage.setItem('user', JSON.stringify(user))
+  }
+
+  useEffect(() => {
+    const _user = localStorage.getItem('user')
+    setUserState(_user ? JSON.parse(_user) : null)
+  }, [])
 
   return (
-    <AppContext.Provider value={{ user, setUser }}>
+    <AppContext.Provider value={{ user, setUser, isAuthenticated }}>
       {children}
     </AppContext.Provider>
   )

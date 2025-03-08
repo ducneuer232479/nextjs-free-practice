@@ -17,10 +17,12 @@ import { useToast } from '@/components/ui/use-toast'
 import { authApiRequest } from '@/apiRequests/auth'
 import { handleErrorApi } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { useAppContext } from '@/app/app-provider'
 
 const LoginForm = () => {
   const { toast } = useToast()
   const router = useRouter()
+  const { setUser } = useAppContext()
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -41,6 +43,7 @@ const LoginForm = () => {
       toast({
         description: result?.payload.message
       })
+      setUser(result.payload.data.account)
       router.push('/me')
       router.refresh()
     } catch (error: any) {

@@ -44,7 +44,7 @@ export class EntityError extends HttpError {
   }
 }
 
-const isClient = () => typeof window !== 'undefined'
+export const isClient = () => typeof window !== 'undefined'
 
 const request = async <Response>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
