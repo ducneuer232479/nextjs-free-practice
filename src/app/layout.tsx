@@ -6,11 +6,10 @@ import localFont from 'next/font/local'
 import { ThemeProvider } from '@/components/theme-provider'
 import Header from '@/components/header'
 import { Toaster } from '@/components/ui/toaster'
-import { cookies } from 'next/headers'
 import AppProvider from '@/app/app-provider'
 import SlideSession from '@/components/slide-session'
-import { accountApiRequest } from '@/apiRequests/account'
 import { baseOpenGraph } from '@/app/shared-metadata'
+import { AccountResType } from '@/schemaValidations/account.schema'
 
 // const roboto = Roboto({ subsets: ['vietnamese'], weight: ['100', '300'] })
 
@@ -45,15 +44,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookieStore = cookies()
-  const sessionToken = cookieStore.get('sessionToken')
-
-  let user = null
-
-  if (sessionToken) {
-    const data = await accountApiRequest.me(sessionToken.value)
-    user = data.payload.data
-  }
+  let user: AccountResType['data'] | null = null
 
   return (
     <html lang='en' suppressHydrationWarning>
@@ -65,8 +56,8 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppProvider initialSessionToken={sessionToken?.value} user={user}>
-            <Header user={user} />
+          <AppProvider user={user}>
+            <Header />
             {children}
             <SlideSession />
           </AppProvider>

@@ -44,55 +44,36 @@ export class EntityError extends HttpError {
   }
 }
 
-class SessionToken {
-  private token = ''
-  private _expiresAt = new Date().toISOString()
-  get value() {
-    return this.token
-  }
-  set value(token: string) {
-    if (typeof window === 'undefined') {
-      throw new Error('Cannot set token on server side')
-    }
-    this.token = token
-  }
-  get expiresAt() {
-    return this._expiresAt
-  }
-  set expiresAt(expiresAt: string) {
-    if (typeof window === 'undefined') {
-      throw new Error('Cannot set expiresAt on server side')
-    }
-    this._expiresAt = expiresAt
-  }
-}
-
-export const clientSessionToken = new SessionToken()
+const isClient = () => typeof window !== 'undefined'
 
 const request = async <Response>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   url: string,
   options?: CustomOptions
 ) => {
-  const body = options?.body
-    ? options.body instanceof FormData
-      ? options.body
-      : JSON.stringify(options.body)
-    : undefined
+  let body: FormData | string | undefined = undefined
 
-  const baseHeaders =
+  if (options?.body instanceof FormData) {
+    body = options.body
+  } else if (options?.body) {
+    body = JSON.stringify(options?.body)
+  }
+
+  const baseHeaders: { [key: string]: string } =
     body instanceof FormData
-      ? {
-          Authorization: clientSessionToken.value
-            ? `Bear ${clientSessionToken.value}`
-            : ''
-        }
+      ? {}
       : {
-          'Content-Type': 'application/json',
-          Authorization: clientSessionToken.value
-            ? `Bear ${clientSessionToken.value}`
-            : ''
+          'Content-Type': 'application/json'
         }
+
+  if (isClient()) {
+    const sessionToken = localStorage.getItem('sessionToken')
+
+    if (sessionToken) {
+      baseHeaders.Authorization = `Bearer ${sessionToken}`
+    }
+  }
+
   const baseUrl =
     options?.baseUrl === undefined
       ? envConfig.NEXT_PUBLIC_API_ENDPOINT
@@ -126,17 +107,21 @@ const request = async <Response>(
         }
       )
     } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
-      if (typeof window !== 'undefined') {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          body: JSON.stringify({ force: true }),
-          headers: {
-            ...baseHeaders
-          } as any
-        })
-        clientSessionToken.value = ''
-        clientSessionToken.expiresAt = new Date().toISOString()
-        location.href = '/login'
+      if (isClient()) {
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            body: JSON.stringify({ force: true }),
+            headers: {
+              ...baseHeaders
+            } as any
+          })
+        } catch (error) {
+        } finally {
+          localStorage.removeItem('sessionToken')
+          localStorage.removeItem('sessionTokenExpiresAt')
+          location.href = '/login'
+        }
       } else {
         const sessionToken = (options?.headers as any).Authorization.split(
           'Bearer '
@@ -148,17 +133,18 @@ const request = async <Response>(
     }
   }
 
-  if (typeof window !== 'undefined') {
+  if (isClient()) {
     if (
       ['auth/login', 'auth/register'].some(
         (item) => item === normalizePath(url)
       )
     ) {
-      clientSessionToken.value = (payload as LoginResType).data.token
-      clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt
+      const { token, expiresAt } = (payload as LoginResType).data
+      localStorage.setItem('sessionToken', token)
+      localStorage.setItem('sessionTokenExpiresAt', expiresAt)
     } else if ('auth/logout' === normalizePath(url)) {
-      clientSessionToken.value = ''
-      clientSessionToken.expiresAt = new Date().toISOString()
+      localStorage.removeItem('sessionToken')
+      localStorage.removeItem('sessionTokenExpiresAt')
     }
   }
 
